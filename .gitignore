@@ -1,3 +1,6 @@
+# LINEのトーク履歴ディレクトリ
+line-history-text/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
