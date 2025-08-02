@@ -7,7 +7,7 @@ SEARCH_TEXT = "横岡は"
 TALK_HISTORY_PATH = "line-history-text/talk_history.txt"
 
 
-class SearchMultipleText:
+class TextExtractionForMultipleLine:
     """複数行テキストファイルから、特定の文字列が含まれる内容を抽出するクラス
 
     複数行テキストを特定の規則に従って抽出し、それを必要に応じて
@@ -151,7 +151,7 @@ class SearchMultipleText:
 
 def main() -> None:
     # テスト用
-    test = SearchMultipleText(TALK_HISTORY_PATH, "", SEARCH_TEXT)
+    test = TextExtractionForMultipleLine(TALK_HISTORY_PATH, "", SEARCH_TEXT)
     test.print_setting_values()
 
 
