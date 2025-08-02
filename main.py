@@ -45,29 +45,60 @@ class SearchMultipleText:
     """
 
     def __init__(
-        self, file_path: str, separate_pattern: str, search_word_pattern: str, extraction_separate_text: bool = False
+        self,
+        file_path: str = "",
+        separate_pattern: str = "",
+        search_word_pattern: str = "",
+        is_extract_separate_text: bool = False,
     ) -> None:
-        self.file_path = file_path
-        self.separate_pattern = separate_pattern
-        self.search_word_pattern = search_word_pattern
-        self.extraction_separate_text = extraction_separate_text
-        self.extract_text = ""
+        if (file_path == "") or (separate_pattern == "") or (search_word_pattern == ""):
+            raise ValueError("引数の値はすべて指定してください")
+
+        self._file_path = file_path
+        self._separate_pattern = separate_pattern
+        self._search_word_pattern = search_word_pattern
+        self._is_extract_separate_text = is_extract_separate_text
+        self._extract_text = ""
+
+    @property
+    def file_path(self) -> str:
+        return self._file_path
 
     @file_path.setter
     def file_path(self, file_path: str) -> None:
-        self.file_path = file_path
+        if file_path == "":
+            raise ValueError("値が指定されていません")
+        self._file_path = file_path
+
+    @property
+    def separate_pattern(self) -> str:
+        return self._separate_pattern
 
     @separate_pattern.setter
     def separate_pattern(self, separate_pattern: str) -> None:
-        self.separate_pattern = separate_pattern
+        if separate_pattern == "":
+            raise ValueError("値が指定されていません")
+        self._separate_pattern = separate_pattern
+
+    @property
+    def search_word_pattern(self) -> str:
+        return self._search_word_pattern
 
     @search_word_pattern.setter
     def search_word_pattern(self, search_word_pattern: str) -> None:
-        self.search_word_pattern = search_word_pattern
+        if search_word_pattern == "":
+            raise ValueError("値が指定されていません")
+        self._search_word_pattern = search_word_pattern
 
-    @extraction_separate_text.setter
-    def extraction_separate_text(self, extraction_separate_text: bool) -> None:
-        self.extraction_separate_text = extraction_separate_text
+    @property
+    def is_extract_separate_text(self) -> bool:
+        return self._is_extract_separate_text
+
+    @is_extract_separate_text.setter
+    def is_extract_separate_text(self, is_extract_separate_text: bool) -> None:
+        if is_extract_separate_text == "":
+            raise ValueError("値が指定されていません")
+        self._is_extract_separate_text = is_extract_separate_text
 
     def print_setting_values(self) -> None:
         """標準出力へ設定を出力する。
@@ -75,10 +106,10 @@ class SearchMultipleText:
         """
         # 環境によって改行コードなどに差分があることを考慮し、
         # 設定用変数ごとに print で出力
-        print("file_path: " & self.file_path)
-        print("separate_pattern: " & self.separate_pattern)
-        print("search_word_pattern: " & self.search_word_pattern)
-        print("extraction_separate_text: " & self.extraction_separate_text)
+        print("file_path: " + self._file_path)
+        print("separate_pattern: " + self._separate_pattern)
+        print("search_word_pattern: " + self._search_word_pattern)
+        print("extraction_separate_text: " + str(self._is_extract_separate_text))
 
     def _initialization(self):
         """文字列をサーチするファイルの初期化を行う。
@@ -119,12 +150,9 @@ class SearchMultipleText:
 
 
 def main() -> None:
-
-    # (Python 使い方確認用)ファイル読み込みの動作をチェックするテスト
-    with open(TALK_HISTORY_PATH, "r", encoding="utf-8") as file:
-        for _ in range(40):
-            text = file.readline()
-            print(text)
+    # テスト用
+    test = SearchMultipleText(TALK_HISTORY_PATH, "", SEARCH_TEXT)
+    test.print_setting_values()
 
 
 if __name__ == "__main__":
