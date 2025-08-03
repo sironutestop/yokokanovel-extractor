@@ -122,9 +122,9 @@ class TextExtractionForMultipleLine:
         for line in file:
             if re.match(self._separate_pattern, line):
                 return line
-            else:
-                print("初期化処理に失敗しました")
-                raise ValueError("separate_pattern に合致する行が見つかりませんでした")
+
+        print("初期化処理に失敗しました")
+        raise ValueError("separate_pattern に合致する行が見つかりませんでした")
 
     def _search_word(self, file: io.TextIOWrapper, search_head_text: str) -> List[str]:
         """文字列にサーチする文字列が含まれるか確認する。
