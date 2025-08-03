@@ -12,7 +12,7 @@ SEPARATE_PATTERN = r"\d{2}:\d{2}\s+"
 
 
 class TextExtractionForMultipleLine:
-    """複数行テキストファイルから、特定の文字列が含まれる内容を抽出するクラス
+    """複数行テキストファイルから、特定の文字列が含まれる内容を抽出するクラス。
 
     複数行テキストを特定の規則に従って抽出し、それを必要に応じて
     特定の文字列が含まれているものを抽出する。
@@ -127,11 +127,12 @@ class TextExtractionForMultipleLine:
         raise ValueError("separate_pattern に合致する行が見つかりませんでした")
 
     def _search_word(self, file: io.TextIOWrapper, search_head_text: str) -> List[str]:
-        """文字列にサーチする文字列が含まれるか確認する。
+        """文字列のグループにサーチする文字列が含まれるか確認。
         Args:
             file (io.TextIOWrapper): オープンしたテキストファイル。
             search_head_text (str): 一回で確認する行の先頭の文字列。
         Returns:
+            List[str]: 合致したテキストのリスト。
         """
         extract_text_list = []
 
@@ -167,6 +168,7 @@ class TextExtractionForMultipleLine:
         """抽出処理を実行する。
         Args:
         Returns:
+            List[str]: 抽出したテキストグループ。
         """
         extract_text_list = []
 
@@ -178,7 +180,6 @@ class TextExtractionForMultipleLine:
 
 
 def main() -> None:
-    # テスト用
     test = TextExtractionForMultipleLine(
         file_path=TALK_HISTORY_PATH, separate_pattern=SEPARATE_PATTERN, search_word_pattern=SEARCH_TEXT
     )
