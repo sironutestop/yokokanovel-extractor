@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import io
 import re
-from typing import List, Tuple, Union
+from typing import List
 
 # 横岡小説を判定させるためのテキスト
 SEARCH_TEXT = r"横岡は"
@@ -135,26 +135,35 @@ class TextExtractionForMultipleLine:
         """
         extract_text_list = []
 
-        # 探索するテキストをひとまとめにする
+        # 探索するテキストをグループにする
         search_group_text = search_head_text
         for line in file:
-
-            # 次の行がセパレートする行のやつ、もしくはファイルの最終行だった場合(line == "")はテキストグループのチェックをする
-            if re.match(self._separate_pattern, line) or line == "":
-                # ひとまとめにしたテキストから、検索するワードが含まれるか確認する
-                for search_group_line in search_group_text:
+            # 次の行がセパレートする行だった場合は、
+            # テキストグループが確定するので、検索ワードが含まれるかチェックする
+            if re.match(self._separate_pattern, line):
+                search_group_lines = search_group_text.splitlines()
+                for search_group_line in search_group_lines:
                     if re.search(self._search_word_pattern, search_group_line):
                         extract_text_list.append(search_group_text)
+                        break
 
-                # 次回検索の先頭行のテキストで、探索するテキストを上書きする。
+                # 現在の line が次のグループの先頭行になるので、テキストグループ変数に代入する
                 search_group_text = line
 
             else:
                 search_group_text = search_head_text + line
 
+        # 逐次的にファイルを読み込んでおり、最終行をチェックできないので、
+        # line を読み込み終わったら、最後のテキストグループのチェックを行う
+        search_group_lines = search_group_text.splitlines()
+        for search_group_line in search_group_lines:
+            if re.search(self._search_word_pattern, search_group_line):
+                extract_text_list.append(search_group_text)
+                break
+
         return extract_text_list
 
-    def extraction(self) -> Union[List[str], None]:
+    def extraction(self) -> List[str]:
         """抽出処理を実行する。
         Args:
         Returns:
@@ -167,17 +176,18 @@ class TextExtractionForMultipleLine:
 
         return extract_text_list
 
-    def print_extraction_text(self) -> None:
-        """抽出したテキストのリストを標準出力へ出力する。
-        Args:
-        """
-        print("処理実行")
-
 
 def main() -> None:
     # テスト用
-    test = TextExtractionForMultipleLine(TALK_HISTORY_PATH, SEPARATE_PATTERN, SEARCH_TEXT)
-    print(test.extraction())
+    test = TextExtractionForMultipleLine(
+        file_path=TALK_HISTORY_PATH, separate_pattern=SEPARATE_PATTERN, search_word_pattern=SEARCH_TEXT
+    )
+    extract_text_list = test.extraction()
+    for line in extract_text_list:
+        print("-----START-----")
+        print(line)
+        print("----- END -----")
+        print("\n\n\n")
 
 
 if __name__ == "__main__":
