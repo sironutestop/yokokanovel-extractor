@@ -1,10 +1,14 @@
 # -*- coding:utf-8 -*-
+import io
 import re
-from typing import List, Union
+from typing import List, Tuple, Union
 
 # 横岡小説を判定させるためのテキスト
-SEARCH_TEXT = "横岡は"
+SEARCH_TEXT = r"横岡は"
+# 横岡小説の抽出対象となるテキスト
 TALK_HISTORY_PATH = "line-history-text/talk_history.txt"
+# 一つ当たりのメッセージの塊を判別する、テキストセパレート用の正規表現
+SEPARATE_PATTERN = r"\d{2}:\d{2}\s+"
 
 
 class TextExtractionForMultipleLine:
@@ -33,14 +37,12 @@ class TextExtractionForMultipleLine:
 
 
     Attributes:
-        text_path (str):
+        file_path (str):
         separate_pattern (str):
-        search_word (str):
+        search_word_pattern (str):
         extraction_separate_text (bool): 抽出する文字列に、separate_pattern の箇所も含めるか。
                                             True: 含める False: 含めない
                                             (上記 Example の箇所だと、「hh:mm」が該当する)
-
-        extract_text (list:str): 抽出したテキストのリスト
 
     """
 
@@ -58,7 +60,6 @@ class TextExtractionForMultipleLine:
         self._separate_pattern = separate_pattern
         self._search_word_pattern = search_word_pattern
         self._is_extract_separate_text = is_extract_separate_text
-        self._extract_text = ""
 
     @property
     def file_path(self) -> str:
@@ -111,36 +112,60 @@ class TextExtractionForMultipleLine:
         print("search_word_pattern: " + self._search_word_pattern)
         print("extraction_separate_text: " + str(self._is_extract_separate_text))
 
-    def _initialization(self):
+    def _initialization(self, file: io.TextIOWrapper) -> str:
         """文字列をサーチするファイルの初期化を行う。
         Args:
+            file (io.TextIOWrapper): オープンしたテキストファイル。
         Returns:
+            str: 探索を開始する先頭行の文字列を返します。
         """
-        print("初期化実行")
+        for line in file:
+            if re.match(self._separate_pattern, line):
+                return line
+            else:
+                print("初期化処理に失敗しました")
+                raise ValueError("separate_pattern に合致する行が見つかりませんでした")
 
-    def _check_search_text(self):
-        """1回でサーチする文字列を抽出する。
-        Args:
-        Returns:
-        """
-        print("サーチ用文字列の抽出実行")
-
-    def _search_word(self):
+    def _search_word(self, file: io.TextIOWrapper, search_head_text: str) -> List[str]:
         """文字列にサーチする文字列が含まれるか確認する。
         Args:
+            file (io.TextIOWrapper): オープンしたテキストファイル。
+            search_head_text (str): 一回で確認する行の先頭の文字列。
         Returns:
         """
-        print("文字列にサーチする文字列が含まれるかチェックし、抽出実行")
+        extract_text_list = []
+
+        # 探索するテキストをひとまとめにする
+        search_group_text = search_head_text
+        for line in file:
+
+            # 次の行がセパレートする行のやつ、もしくはファイルの最終行だった場合(line == "")はテキストグループのチェックをする
+            if re.match(self._separate_pattern, line) or line == "":
+                # ひとまとめにしたテキストから、検索するワードが含まれるか確認する
+                for search_group_line in search_group_text:
+                    if re.search(self._search_word_pattern, search_group_line):
+                        extract_text_list.append(search_group_text)
+
+                # 次回検索の先頭行のテキストで、探索するテキストを上書きする。
+                search_group_text = line
+
+            else:
+                search_group_text = search_head_text + line
+
+        return extract_text_list
 
     def extraction(self) -> Union[List[str], None]:
         """抽出処理を実行する。
         Args:
         Returns:
         """
+        extract_text_list = []
 
-        self._initialization()
-        self._check_search_text()
-        self._search_word()
+        with open(self._file_path, encoding="utf-8") as f:
+            search_head_text = self._initialization(f)
+            extract_text_list = self._search_word(f, search_head_text)
+
+        return extract_text_list
 
     def print_extraction_text(self) -> None:
         """抽出したテキストのリストを標準出力へ出力する。
@@ -151,8 +176,8 @@ class TextExtractionForMultipleLine:
 
 def main() -> None:
     # テスト用
-    test = TextExtractionForMultipleLine(TALK_HISTORY_PATH, "", SEARCH_TEXT)
-    test.print_setting_values()
+    test = TextExtractionForMultipleLine(TALK_HISTORY_PATH, SEPARATE_PATTERN, SEARCH_TEXT)
+    print(test.extraction())
 
 
 if __name__ == "__main__":
