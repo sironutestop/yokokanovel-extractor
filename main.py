@@ -151,7 +151,7 @@ class TextExtractionForMultipleLine:
                 search_group_text = line
 
             else:
-                search_group_text = search_head_text + line
+                search_group_text = search_group_text + line
 
         # 逐次的にファイルを読み込んでおり、最終行をチェックできないので、
         # line を読み込み終わったら、最後のテキストグループのチェックを行う
