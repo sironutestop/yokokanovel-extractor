@@ -1,3 +1,6 @@
+# Mac で使われるファイル
+.DS_store
+
 # LINEのトーク履歴ディレクトリ
 line-history-text/
 

@@ -8,7 +8,7 @@ SEARCH_TEXT = r"横岡は"
 # 横岡小説の抽出対象となるテキスト
 TALK_HISTORY_PATH = "line-history-text/talk_history.txt"
 # 一つ当たりのメッセージの塊を判別する、テキストセパレート用の正規表現
-SEPARATE_PATTERN = r"\d{2}:\d{2}\s+"
+SEPARATE_PATTERN = r"^\d{2}:\d{2}\t+.+\t+"
 
 
 class TextExtractionForMultipleLine:
@@ -40,8 +40,7 @@ class TextExtractionForMultipleLine:
         file_path (str):
         separate_pattern (str):
         search_word_pattern (str):
-        extraction_separate_text (bool): 抽出する文字列に、separate_pattern の箇所も含めるか。
-                                            True: 含める False: 含めない
+        is_exclude_separate_text (bool): 抽出する文字列から、separate_pattern を除外するか否か。
                                             (上記 Example の箇所だと、「hh:mm」が該当する)
 
     """
@@ -51,7 +50,7 @@ class TextExtractionForMultipleLine:
         file_path: str = "",
         separate_pattern: str = "",
         search_word_pattern: str = "",
-        is_extract_separate_text: bool = False,
+        is_exclude_separate_text: bool = False,
     ) -> None:
         if (file_path == "") or (separate_pattern == "") or (search_word_pattern == ""):
             raise ValueError("引数の値はすべて指定してください")
@@ -59,7 +58,7 @@ class TextExtractionForMultipleLine:
         self._file_path = file_path
         self._separate_pattern = separate_pattern
         self._search_word_pattern = search_word_pattern
-        self._is_extract_separate_text = is_extract_separate_text
+        self._is_exclude_separate_text = is_exclude_separate_text
 
     @property
     def file_path(self) -> str:
@@ -92,14 +91,14 @@ class TextExtractionForMultipleLine:
         self._search_word_pattern = search_word_pattern
 
     @property
-    def is_extract_separate_text(self) -> bool:
-        return self._is_extract_separate_text
+    def is_exclude_separate_text(self) -> bool:
+        return self._is_exclude_separate_text
 
-    @is_extract_separate_text.setter
-    def is_extract_separate_text(self, is_extract_separate_text: bool) -> None:
-        if is_extract_separate_text == "":
+    @is_exclude_separate_text.setter
+    def is_exclude_separate_text(self, is_exclude_separate_text: bool) -> None:
+        if is_exclude_separate_text == "":
             raise ValueError("値が指定されていません")
-        self._is_extract_separate_text = is_extract_separate_text
+        self._is_exclude_separate_text = is_exclude_separate_text
 
     def print_setting_values(self) -> None:
         """標準出力へ設定を出力する。
@@ -110,7 +109,7 @@ class TextExtractionForMultipleLine:
         print("file_path: " + self._file_path)
         print("separate_pattern: " + self._separate_pattern)
         print("search_word_pattern: " + self._search_word_pattern)
-        print("extraction_separate_text: " + str(self._is_extract_separate_text))
+        print("is_exclude_separate_text: " + str(self._is_exclude_separate_text))
 
     def _initialization(self, file: io.TextIOWrapper) -> str:
         """文字列をサーチするファイルの初期化を行う。
@@ -145,6 +144,12 @@ class TextExtractionForMultipleLine:
                 search_group_lines = search_group_text.splitlines()
                 for search_group_line in search_group_lines:
                     if re.search(self._search_word_pattern, search_group_line):
+
+                        # セパレートパターンの除外処理
+                        if self._is_exclude_separate_text:
+                            exclude_text = re.match(self._separate_pattern, search_group_text)
+                            search_group_text = search_group_text[exclude_text.end() :]
+
                         extract_text_list.append(search_group_text)
                         break
 
@@ -159,6 +164,12 @@ class TextExtractionForMultipleLine:
         search_group_lines = search_group_text.splitlines()
         for search_group_line in search_group_lines:
             if re.search(self._search_word_pattern, search_group_line):
+
+                # セパレートパターンの除外処理
+                if self._is_exclude_separate_text:
+                    exclude_text = re.match(self._separate_pattern, search_group_text)
+                    search_group_text = search_group_text[exclude_text.end() :]
+
                 extract_text_list.append(search_group_text)
                 break
 
@@ -180,15 +191,18 @@ class TextExtractionForMultipleLine:
 
 
 def main() -> None:
-    test = TextExtractionForMultipleLine(
-        file_path=TALK_HISTORY_PATH, separate_pattern=SEPARATE_PATTERN, search_word_pattern=SEARCH_TEXT
+    yokokanovel_extractor = TextExtractionForMultipleLine(
+        file_path=TALK_HISTORY_PATH,
+        separate_pattern=SEPARATE_PATTERN,
+        search_word_pattern=SEARCH_TEXT,
+        is_exclude_separate_text=True,
     )
-    extract_text_list = test.extraction()
+    extract_text_list = yokokanovel_extractor.extraction()
     for line in extract_text_list:
-        print("-----START-----")
+        # print("-----START-----")
         print(line)
-        print("----- END -----")
-        print("\n\n\n")
+        # print("----- END -----")
+        # print("\n\n\n")
 
 
 if __name__ == "__main__":
